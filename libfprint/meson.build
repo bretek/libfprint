@@ -25,6 +25,7 @@ libfprint_public_headers = [
     'fp-image-device.h',
     'fp-image.h',
     'fp-print.h',
+    'sigfm.hpp',
 ]
 
 libfprint_private_headers = [
