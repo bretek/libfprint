@@ -17,19 +17,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 #pragma once
 
 #include "fp-image.h"
-#include <glib-object.h>
 #include <gio/gio.h>
+#include <glib-object.h>
+#include <gusb.h>
 
 G_BEGIN_DECLS
 
-#define FP_TYPE_DEVICE (fp_device_get_type ())
-#define FP_DEVICE_RETRY (fp_device_retry_quark ())
-#define FP_DEVICE_ERROR (fp_device_error_quark ())
-G_DECLARE_DERIVABLE_TYPE (FpDevice, fp_device, FP, DEVICE, GObject)
+#define FP_TYPE_DEVICE (fp_device_get_type())
+#define FP_DEVICE_RETRY (fp_device_retry_quark())
+#define FP_DEVICE_ERROR (fp_device_error_quark())
+G_DECLARE_DERIVABLE_TYPE(FpDevice, fp_device, FP, DEVICE, GObject)
 
 #include "fp-print.h"
 
@@ -59,7 +59,8 @@ typedef enum {
  * @FP_DEVICE_FEATURE_STORAGE_CLEAR: Supports clearing the whole storage
  * @FP_DEVICE_FEATURE_DUPLICATES_CHECK: Natively supports duplicates detection
  * @FP_DEVICE_FEATURE_ALWAYS_ON: Whether the device can run continuously
- * @FP_DEVICE_FEATURE_UPDATE_PRINT: Supports updating an existing print record using new scans
+ * @FP_DEVICE_FEATURE_UPDATE_PRINT: Supports updating an existing print record
+ * using new scans
  */
 typedef enum /*< flags >*/ {
   FP_DEVICE_FEATURE_NONE = 0,
@@ -137,7 +138,8 @@ typedef enum {
  * @FP_DEVICE_ERROR_DATA_INVALID: The passed data is invalid
  * @FP_DEVICE_ERROR_DATA_NOT_FOUND: Requested print was not found on device
  * @FP_DEVICE_ERROR_DATA_FULL: No space on device available for operation
- * @FP_DEVICE_ERROR_DATA_DUPLICATE: Enrolling template duplicates storaged templates
+ * @FP_DEVICE_ERROR_DATA_DUPLICATE: Enrolling template duplicates storaged
+ * templates
  * @FP_DEVICE_ERROR_REMOVED: The device has been removed.
  * @FP_DEVICE_ERROR_TOO_HOT: The device might be getting too hot
  *
@@ -160,8 +162,8 @@ typedef enum {
   FP_DEVICE_ERROR_TOO_HOT,
 } FpDeviceError;
 
-GQuark fp_device_retry_quark (void);
-GQuark fp_device_error_quark (void);
+GQuark fp_device_retry_quark(void);
+GQuark fp_device_error_quark(void);
 
 /**
  * FpEnrollProgress:
@@ -173,11 +175,9 @@ GQuark fp_device_error_quark (void);
  *
  * The passed error is guaranteed to be of type %FP_DEVICE_RETRY if set.
  */
-typedef void (*FpEnrollProgress) (FpDevice *device,
-                                  gint      completed_stages,
-                                  FpPrint  *print,
-                                  gpointer  user_data,
-                                  GError   *error);
+typedef void (*FpEnrollProgress)(FpDevice *device, gint completed_stages,
+                                 FpPrint *print, gpointer user_data,
+                                 GError *error);
 
 /**
  * FpMatchCb:
@@ -211,188 +211,126 @@ typedef void (*FpEnrollProgress) (FpDevice *device,
  * success/failure can often be reported at an earlier time, and there is
  * no need to make the user wait.
  */
-typedef void (*FpMatchCb) (FpDevice *device,
-                           FpPrint  *match,
-                           FpPrint  *print,
-                           gpointer  user_data,
-                           GError   *error);
+typedef void (*FpMatchCb)(FpDevice *device, FpPrint *match, FpPrint *print,
+                          gpointer user_data, GError *error);
 
-const gchar *fp_device_get_driver (FpDevice *device);
-const gchar *fp_device_get_device_id (FpDevice *device);
-const gchar *fp_device_get_name (FpDevice *device);
-gboolean     fp_device_is_open (FpDevice *device);
-FpScanType   fp_device_get_scan_type (FpDevice *device);
-FpFingerStatusFlags fp_device_get_finger_status (FpDevice *device);
-gint         fp_device_get_nr_enroll_stages (FpDevice *device);
-FpTemperature fp_device_get_temperature (FpDevice *device);
+const gchar *fp_device_get_driver(FpDevice *device);
+const gchar *fp_device_get_device_id(FpDevice *device);
+const gchar *fp_device_get_name(FpDevice *device);
+gboolean fp_device_is_open(FpDevice *device);
+FpScanType fp_device_get_scan_type(FpDevice *device);
+FpFingerStatusFlags fp_device_get_finger_status(FpDevice *device);
+gint fp_device_get_nr_enroll_stages(FpDevice *device);
+FpTemperature fp_device_get_temperature(FpDevice *device);
 
-FpDeviceFeature     fp_device_get_features (FpDevice *device);
-gboolean            fp_device_has_feature (FpDevice       *device,
-                                           FpDeviceFeature feature);
+GUsbDevice *fp_device_get_usb(FpDevice *device);
+FpDeviceFeature fp_device_get_features(FpDevice *device);
+gboolean fp_device_has_feature(FpDevice *device, FpDeviceFeature feature);
 
 /* Opening the device */
-void fp_device_open (FpDevice           *device,
-                     GCancellable       *cancellable,
-                     GAsyncReadyCallback callback,
-                     gpointer            user_data);
+void fp_device_open(FpDevice *device, GCancellable *cancellable,
+                    GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_close (FpDevice           *device,
-                      GCancellable       *cancellable,
-                      GAsyncReadyCallback callback,
-                      gpointer            user_data);
+void fp_device_close(FpDevice *device, GCancellable *cancellable,
+                     GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_suspend (FpDevice           *device,
-                        GCancellable       *cancellable,
-                        GAsyncReadyCallback callback,
-                        gpointer            user_data);
+void fp_device_suspend(FpDevice *device, GCancellable *cancellable,
+                       GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_resume (FpDevice           *device,
-                       GCancellable       *cancellable,
-                       GAsyncReadyCallback callback,
-                       gpointer            user_data);
+void fp_device_resume(FpDevice *device, GCancellable *cancellable,
+                      GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_enroll (FpDevice           *device,
-                       FpPrint            *template_print,
-                       GCancellable       *cancellable,
-                       FpEnrollProgress    progress_cb,
-                       gpointer            progress_data,
-                       GDestroyNotify      progress_destroy,
-                       GAsyncReadyCallback callback,
-                       gpointer            user_data);
+void fp_device_enroll(FpDevice *device, FpPrint *template_print,
+                      GCancellable *cancellable, FpEnrollProgress progress_cb,
+                      gpointer progress_data, GDestroyNotify progress_destroy,
+                      GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_verify (FpDevice           *device,
-                       FpPrint            *enrolled_print,
-                       GCancellable       *cancellable,
-                       FpMatchCb           match_cb,
-                       gpointer            match_data,
-                       GDestroyNotify      match_destroy,
-                       GAsyncReadyCallback callback,
-                       gpointer            user_data);
+void fp_device_verify(FpDevice *device, FpPrint *enrolled_print,
+                      GCancellable *cancellable, FpMatchCb match_cb,
+                      gpointer match_data, GDestroyNotify match_destroy,
+                      GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_identify (FpDevice           *device,
-                         GPtrArray          *prints,
-                         GCancellable       *cancellable,
-                         FpMatchCb           match_cb,
-                         gpointer            match_data,
-                         GDestroyNotify      match_destroy,
-                         GAsyncReadyCallback callback,
-                         gpointer            user_data);
+void fp_device_identify(FpDevice *device, GPtrArray *prints,
+                        GCancellable *cancellable, FpMatchCb match_cb,
+                        gpointer match_data, GDestroyNotify match_destroy,
+                        GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_capture (FpDevice           *device,
-                        gboolean            wait_for_finger,
-                        GCancellable       *cancellable,
-                        GAsyncReadyCallback callback,
-                        gpointer            user_data);
+void fp_device_capture(FpDevice *device, gboolean wait_for_finger,
+                       GCancellable *cancellable, GAsyncReadyCallback callback,
+                       gpointer user_data);
 
-void fp_device_delete_print (FpDevice           *device,
-                             FpPrint            *enrolled_print,
-                             GCancellable       *cancellable,
-                             GAsyncReadyCallback callback,
-                             gpointer            user_data);
+void fp_device_delete_print(FpDevice *device, FpPrint *enrolled_print,
+                            GCancellable *cancellable,
+                            GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_list_prints (FpDevice           *device,
-                            GCancellable       *cancellable,
-                            GAsyncReadyCallback callback,
-                            gpointer            user_data);
+void fp_device_list_prints(FpDevice *device, GCancellable *cancellable,
+                           GAsyncReadyCallback callback, gpointer user_data);
 
-void fp_device_clear_storage (FpDevice           *device,
-                              GCancellable       *cancellable,
-                              GAsyncReadyCallback callback,
-                              gpointer            user_data);
+void fp_device_clear_storage(FpDevice *device, GCancellable *cancellable,
+                             GAsyncReadyCallback callback, gpointer user_data);
 
-gboolean fp_device_open_finish (FpDevice     *device,
-                                GAsyncResult *result,
-                                GError      **error);
-gboolean fp_device_close_finish (FpDevice     *device,
-                                 GAsyncResult *result,
-                                 GError      **error);
-gboolean fp_device_suspend_finish (FpDevice     *device,
-                                   GAsyncResult *result,
-                                   GError      **error);
-gboolean fp_device_resume_finish (FpDevice     *device,
-                                  GAsyncResult *result,
-                                  GError      **error);
-FpPrint *fp_device_enroll_finish (FpDevice     *device,
-                                  GAsyncResult *result,
-                                  GError      **error);
-gboolean fp_device_verify_finish (FpDevice     *device,
-                                  GAsyncResult *result,
-                                  gboolean     *match,
-                                  FpPrint     **print,
-                                  GError      **error);
-gboolean fp_device_identify_finish (FpDevice     *device,
-                                    GAsyncResult *result,
-                                    FpPrint     **match,
-                                    FpPrint     **print,
-                                    GError      **error);
-FpImage * fp_device_capture_finish (FpDevice     *device,
-                                    GAsyncResult *result,
-                                    GError      **error);
-gboolean fp_device_delete_print_finish (FpDevice     *device,
-                                        GAsyncResult *result,
-                                        GError      **error);
-GPtrArray * fp_device_list_prints_finish (FpDevice     *device,
-                                          GAsyncResult *result,
-                                          GError      **error);
-gboolean fp_device_clear_storage_finish (FpDevice     *device,
-                                         GAsyncResult *result,
-                                         GError      **error);
+gboolean fp_device_open_finish(FpDevice *device, GAsyncResult *result,
+                               GError **error);
+gboolean fp_device_close_finish(FpDevice *device, GAsyncResult *result,
+                                GError **error);
+gboolean fp_device_suspend_finish(FpDevice *device, GAsyncResult *result,
+                                  GError **error);
+gboolean fp_device_resume_finish(FpDevice *device, GAsyncResult *result,
+                                 GError **error);
+FpPrint *fp_device_enroll_finish(FpDevice *device, GAsyncResult *result,
+                                 GError **error);
+gboolean fp_device_verify_finish(FpDevice *device, GAsyncResult *result,
+                                 gboolean *match, FpPrint **print,
+                                 GError **error);
+gboolean fp_device_identify_finish(FpDevice *device, GAsyncResult *result,
+                                   FpPrint **match, FpPrint **print,
+                                   GError **error);
+FpImage *fp_device_capture_finish(FpDevice *device, GAsyncResult *result,
+                                  GError **error);
+gboolean fp_device_delete_print_finish(FpDevice *device, GAsyncResult *result,
+                                       GError **error);
+GPtrArray *fp_device_list_prints_finish(FpDevice *device, GAsyncResult *result,
+                                        GError **error);
+gboolean fp_device_clear_storage_finish(FpDevice *device, GAsyncResult *result,
+                                        GError **error);
 
-gboolean fp_device_open_sync (FpDevice     *device,
-                              GCancellable *cancellable,
-                              GError      **error);
-gboolean fp_device_close_sync (FpDevice     *device,
+gboolean fp_device_open_sync(FpDevice *device, GCancellable *cancellable,
+                             GError **error);
+gboolean fp_device_close_sync(FpDevice *device, GCancellable *cancellable,
+                              GError **error);
+FpPrint *fp_device_enroll_sync(FpDevice *device, FpPrint *template_print,
                                GCancellable *cancellable,
-                               GError      **error);
-FpPrint * fp_device_enroll_sync (FpDevice        *device,
-                                 FpPrint         *template_print,
-                                 GCancellable    *cancellable,
-                                 FpEnrollProgress progress_cb,
-                                 gpointer         progress_data,
-                                 GError         **error);
-gboolean fp_device_verify_sync (FpDevice     *device,
-                                FpPrint      *enrolled_print,
-                                GCancellable *cancellable,
-                                FpMatchCb     match_cb,
-                                gpointer      match_data,
-                                gboolean     *match,
-                                FpPrint     **print,
-                                GError      **error);
-gboolean fp_device_identify_sync (FpDevice     *device,
-                                  GPtrArray    *prints,
-                                  GCancellable *cancellable,
-                                  FpMatchCb     match_cb,
-                                  gpointer      match_data,
-                                  FpPrint     **match,
-                                  FpPrint     **print,
-                                  GError      **error);
-FpImage * fp_device_capture_sync (FpDevice     *device,
-                                  gboolean      wait_for_finger,
-                                  GCancellable *cancellable,
-                                  GError      **error);
-gboolean fp_device_delete_print_sync (FpDevice     *device,
-                                      FpPrint      *enrolled_print,
+                               FpEnrollProgress progress_cb,
+                               gpointer progress_data, GError **error);
+gboolean fp_device_verify_sync(FpDevice *device, FpPrint *enrolled_print,
+                               GCancellable *cancellable, FpMatchCb match_cb,
+                               gpointer match_data, gboolean *match,
+                               FpPrint **print, GError **error);
+gboolean fp_device_identify_sync(FpDevice *device, GPtrArray *prints,
+                                 GCancellable *cancellable, FpMatchCb match_cb,
+                                 gpointer match_data, FpPrint **match,
+                                 FpPrint **print, GError **error);
+FpImage *fp_device_capture_sync(FpDevice *device, gboolean wait_for_finger,
+                                GCancellable *cancellable, GError **error);
+gboolean fp_device_delete_print_sync(FpDevice *device, FpPrint *enrolled_print,
+                                     GCancellable *cancellable, GError **error);
+GPtrArray *fp_device_list_prints_sync(FpDevice *device,
                                       GCancellable *cancellable,
-                                      GError      **error);
-GPtrArray * fp_device_list_prints_sync (FpDevice     *device,
-                                        GCancellable *cancellable,
-                                        GError      **error);
-gboolean fp_device_clear_storage_sync (FpDevice     *device,
-                                       GCancellable *cancellable,
-                                       GError      **error);
-gboolean fp_device_suspend_sync (FpDevice     *device,
-                                 GCancellable *cancellable,
-                                 GError      **error);
-gboolean fp_device_resume_sync (FpDevice     *device,
-                                GCancellable *cancellable,
-                                GError      **error);
+                                      GError **error);
+gboolean fp_device_clear_storage_sync(FpDevice *device,
+                                      GCancellable *cancellable,
+                                      GError **error);
+gboolean fp_device_suspend_sync(FpDevice *device, GCancellable *cancellable,
+                                GError **error);
+gboolean fp_device_resume_sync(FpDevice *device, GCancellable *cancellable,
+                               GError **error);
 
 /* Deprecated functions */
-G_DEPRECATED_FOR (fp_device_get_features)
-gboolean     fp_device_supports_identify (FpDevice *device);
-G_DEPRECATED_FOR (fp_device_get_features)
-gboolean     fp_device_supports_capture (FpDevice *device);
-G_DEPRECATED_FOR (fp_device_get_features)
-gboolean     fp_device_has_storage (FpDevice *device);
+G_DEPRECATED_FOR(fp_device_get_features)
+gboolean fp_device_supports_identify(FpDevice *device);
+G_DEPRECATED_FOR(fp_device_get_features)
+gboolean fp_device_supports_capture(FpDevice *device);
+G_DEPRECATED_FOR(fp_device_get_features)
+gboolean fp_device_has_storage(FpDevice *device);
 
 G_END_DECLS
